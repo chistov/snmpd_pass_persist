@@ -54,12 +54,12 @@ class ZypioSNMP{
 		return $this;
 	}
 
-  public function initTree(){
+        public function initTree(){
 		$this->treeKeys = array_keys($this->tree);
 		natsort($this->treeKeys);
 		$this->tree = array_merge($this->treeKeys, $this->tree);
     // DEBUG( "full tree :". DEBUG_VAR($this->tree));
-  }
+        }
 
 	public function getNextOid( $requested_oid ){
 
@@ -175,46 +175,41 @@ class ZypioSNMP{
     }
   }
 
-	public function respond(){
+ public function respond(){
     $this->readSensors();
 
-		// This checks for a GET/GETNEXT or SET
-		// NOTE: Only GET/GETNEXT is support ATM
-		if( array_key_exists(1, $_SERVER['argv'])) {
-      file_put_contents("/tmp/ex.log", "ordinary\n", FILE_APPEND);
-
-			// Look for getnext
-			if( $_SERVER['argv'][1] == "-n" )
-				$this->getNextOid( $_SERVER['argv'][2] );
-			else if( $_SERVER['argv'][1] == "-g" )
-				$this->getOid( $_SERVER['argv'][2] );
+    // This checks for a GET/GETNEXT or SET
+    // NOTE: Only GET/GETNEXT is support ATM
+    if( array_key_exists(1, $_SERVER['argv'])) {
+      // Look for getnext
+      if( $_SERVER['argv'][1] == "-n" )
+	$this->getNextOid( $_SERVER['argv'][2] );
+      else if( $_SERVER['argv'][1] == "-g" )
+	$this->getOid( $_SERVER['argv'][2] );
 		
-		}
+	}
 		// PASS_PERSIST 
-		else{
+      else{
 			
-			while(true){
-				$stdin = trim(fread( STDIN, 1024));
+	while(true){
+          $stdin = trim(fread( STDIN, 1024));
 
         if (time() - $this->sensorsLastReadTime > 5){
           $this->readSensors();
           $this->sensorsLastReadTime = time();
         }
-				// If PING is received, respond with PONG
-				if( stristr($stdin, "PING") ) {
+	// If PING is received, respond with PONG
+	if( stristr($stdin, "PING") )
+	  echo "PONG\n";
 
-					echo "PONG\n";
+	// If getnext is received, respond with getnext oid
+	else if( stristr($stdin, "getnext") )
+		$this->getNextOid(explode("\n", $stdin)[1]);
 
-				}
-
-				// If getnext is received, respond with getnext oid
-				else if( stristr($stdin, "getnext") )
-					$this->getNextOid(explode("\n", $stdin)[1]);
-
-				// If get is received, respond with oid
-				else if( stristr($stdin, "get") )
-					$this->getOid(explode("\n", $stdin)[1]);
-			}
-		}
-	}
+	// If get is received, respond with oid
+	else if( stristr($stdin, "get") )
+		$this->getOid(explode("\n", $stdin)[1]);
+      }
+    }
+  }
 }
