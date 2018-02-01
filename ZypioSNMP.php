@@ -133,6 +133,8 @@ class ZypioSNMP{
     return explode(';', $str);
   }
 
+  // Attension!!!
+  // Here MUST be your couters reading
   private function getCounters($line, $cntrName){
     $vals = $this->getVals($line, $cntrName);
     $oid = "";
@@ -150,7 +152,7 @@ class ZypioSNMP{
   }
 
   private function readSensors(){
-    $nsFile = new _File("/opt/NS2/NS_STAT/ns_counters.log");
+    $nsFile = new _File("/Path/to/YourCounters");
     if ($nsFile === null)
       DEBUG("failed to open file");
     while ($line = fgets($nsFile->getHandle())){
